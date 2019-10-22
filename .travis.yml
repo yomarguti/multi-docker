@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t yomarguti/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true yomarguti/react-test npm run test
+
+after_success:
+  - docker build -t yomarguti/multi-client ./client
+  - docker build -t yomarguti/multi-nginx ./nginx
+  - docker build -t yomarguti/multi-server ./server
+  - docker build -t tomarguti/multi-worker ./worker
+
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+- docker push yomarguti/multi-client
+- docker push yomarguti/multi-nginx
+- docker push yomarguti/multi-server
+- docker push yomarguti/multi-worker
